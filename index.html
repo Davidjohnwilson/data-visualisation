@@ -3,11 +3,195 @@
 	<head>
 		<meta charset="utf-8">
 		<title>D3 Page Template</title>
-		<script type="text/javascript" src="d3/d3.v3.js"></script>
+		<script type="text/javascript" src="./d3/d3.js"></script>
+		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
 	<body>
 		<script type="text/javascript">
-			//D3 Code
+			// d3.select("body")
+			//   .append("p")
+			//   .text("New Paragraph!");
+			d3.csv("choreos.csv", function(error,data) {
+				if (error) {
+					console.log(error);
+				} else {
+			  		var counts = data.map(function(o){
+			  			return parseInt(o.count);
+			  		});
+			  		var twentycounts = counts.slice(0,20);
+			  		var choreographers = data.map(function(o){
+			  			return o.choreographer;
+			  		});
+			  		var count = counts.reduce(function(a, b) {
+  						return a+b;
+					});
+					console.log(count);
+
+					//Work with divs
+					var dataset = data;
+					d3.select("body")
+					  .selectAll("div")
+					  .data(twentycounts)
+					  .enter()
+					  .append("div")
+					  // .text(function(d) { return "Choreographer: " + d; })
+					  // .style("color", function(d){
+					  // 	if (d > 9) {
+					  // 		return "red";
+					  // 	} else {
+					  // 		return "blue";
+					  // 	}
+					  // });
+					  .attr("class","bar")
+					  .style("height", function(d) {
+					  	return d*5 + "px";
+					  });
+
+					  d3.select("body").append("br");
+					  d3.select("body").append("br");
+					  d3.select("body").append("br");
+
+					  // Now with SVG
+					  var svg = d3.select("body").append("svg");
+					  //Set size
+					  var w = 1000;
+					  var h = 100;
+					  svg.attr("width",w);
+					  svg.attr("height",h);
+
+					  //add circles
+					  var circles = svg.selectAll("circle")
+					  	 .data(counts.slice(0,5))
+					  	 .enter()
+					  	 .append("circle");
+					  //Give circles attributes
+					  circles.attr("cx",function(d,i){
+					  	return (i * 50) + 50;
+					  })
+					  .attr("cy", h/2)
+					  .attr("r", function(d){
+					  	return d/2;
+					  })
+					  .attr("fill","yellow")
+					  .attr("stroke","orange")
+					  .attr("stroke-width", function(d){
+					  	return d/10;
+					  });
+
+					  d3.select("body").append("br");
+					  d3.select("body").append("br");
+					  d3.select("body").append("br");
+
+					  var newsvg = d3.select("body").append("svg");
+					  //Set size
+					  h = 400
+					  w = 750
+					  var barPadding = 1;
+					  var maxcount = twentycounts[0];
+					  newsvg.attr("width",w);
+					  newsvg.attr("height",h);
+
+					  //add circles
+					  var rects = newsvg.selectAll("rect")
+					  	 .data(twentycounts)
+					  	 .enter()
+					  	 .append("rect")
+					  	 .attr({
+					  	 	x: function(d,i) { return i * (w/ twentycounts.length);},
+					  	 	y: function(d) { return h - (d*h/maxcount);},
+					  	 	width: w / twentycounts.length - barPadding,
+					  	 	height: function(d) { return d*h/maxcount; },
+					  	 	fill: function(d) { return  "rgb(0, 0, " + (d*10) + ")";}
+					  	 });
+
+					  var texts = newsvg.selectAll("text")
+					  	  .data(twentycounts)
+					  	  .enter()
+					  	  .append("text")
+					  	  .text(function(d) {
+					  	  	return d;
+					  	  })
+					  	  .attr({
+					  	  	x: function(d,i) { return i * (w / twentycounts.length)+(w / twentycounts.length - barPadding) / 2;},
+					  	  	y: function(d) { return h - (d*h/maxcount)+14; },
+					  	  	"font-family": "sans-serif",
+					  	  	"font-size": "11px",
+					  	  	fill: "white",
+					  	  	"text-anchor": "middle"
+					  	  });
+
+					  d3.select("body").append("br");
+					  d3.select("body").append("br");
+					  d3.select("body").append("br");
+
+
+				var choreosvg = d3.select("body").append("svg")
+				h = 500;
+				w = 1000;
+				barPadding = 2;
+				choreosvg.attr("width",w).attr("height",h);
+
+				var fulldata = data.map(function(o){
+			  			return [o.choreographer,parseInt(o.count)];
+			  		});
+				var max_data = d3.max(fulldata, function(d){return d[1];});
+				var min_data = d3.min(fulldata, function(d){return d[1];});
+				var yScale = d3.scale.linear()
+									.domain([0,max_data])
+									.range ([0,h]);
+				var yScaleReversed = d3.scale.linear()
+									.domain([0,max_data])
+									.range ([h,0]);
+				var xScale = d3.scale.linear()
+									.domain([0,fulldata.length+3])
+									.range([0,w]);
+				var xScaleReversed = d3.scale.linear()
+									.domain([0,fulldata.length+3])
+									.range([w,0]);
+				var colorScale = d3.scale.sqrt()
+									.domain([0,max_data])
+									.rangeRound([50,255]);
+				
+				var rects = choreosvg.selectAll("rect")
+					  	 .data(fulldata)
+					  	 .enter()
+					  	 .append("rect")
+					  	 .attr({
+					  	 	x: function(d,i) { return xScale(i+3);},
+					  	 	y: function(d) { return h - yScale(d[1]);},
+					  	 	width: xScale(1) - barPadding,
+					  	 	height: function(d) { return yScale(d[1]); },
+					  	 	fill: function(d) { return  "rgb(0, 0, " + colorScale(d[1]) + ")";}
+					  	 });
+				var yAxis = d3.svg.axis()
+								  .scale(yScaleReversed)
+								  .orient("left")
+								  .ticks(5);
+
+				choreosvg.append("g")
+						 .attr("class","axis")
+						 .attr("transform", "translate(" + xScale(2.15) + ",0)")
+						 .call(yAxis);
+
+
+
+				}
+			  });
+
+			var dsv = d3.dsv("|","text/plain");
+			dsv("pieces.csv", function(error,data) {
+				if (error) {
+					console.log(error);
+				} else {
+			  		var counts = data.map(function(o){
+			  			return o.count
+			  		});
+			  		var count = counts.reduce(function(a, b) {
+  						return parseInt(a) + parseInt(b);
+					});
+					console.log(count);
+				}
+			  });
 		</script>
 	</body>
 
