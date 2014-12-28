@@ -1,199 +1,251 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<title>D3 Page Template</title>
-		<script type="text/javascript" src="./d3/d3.js"></script>
-		<link rel="stylesheet" type="text/css" href="style.css">
-	</head>
-	<body>
-		<script type="text/javascript">
-			// d3.select("body")
-			//   .append("p")
-			//   .text("New Paragraph!");
-			d3.csv("choreos.csv", function(error,data) {
-				if (error) {
-					console.log(error);
-				} else {
-			  		var counts = data.map(function(o){
-			  			return parseInt(o.count);
-			  		});
-			  		var twentycounts = counts.slice(0,20);
-			  		var choreographers = data.map(function(o){
-			  			return o.choreographer;
-			  		});
-			  		var count = counts.reduce(function(a, b) {
-  						return a+b;
-					});
-					console.log(count);
+<head>
+	<meta charset="utf-8">
+	<title>D3 Page Template</title>
+	<script type="text/javascript" src="./d3/d3.js"></script>
+	<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+	<p>Click on the graph to switch from Top 20 Choreographers to Top 20 Pieces.</p>
 
-					//Work with divs
-					var dataset = data;
-					d3.select("body")
-					  .selectAll("div")
-					  .data(twentycounts)
-					  .enter()
-					  .append("div")
-					  // .text(function(d) { return "Choreographer: " + d; })
-					  // .style("color", function(d){
-					  // 	if (d > 9) {
-					  // 		return "red";
-					  // 	} else {
-					  // 		return "blue";
-					  // 	}
-					  // });
-					  .attr("class","bar")
-					  .style("height", function(d) {
-					  	return d*5 + "px";
-					  });
+	<br>
+	<br>
 
-					  d3.select("body").append("br");
-					  d3.select("body").append("br");
-					  d3.select("body").append("br");
-
-					  // Now with SVG
-					  var svg = d3.select("body").append("svg");
-					  //Set size
-					  var w = 1000;
-					  var h = 100;
-					  svg.attr("width",w);
-					  svg.attr("height",h);
-
-					  //add circles
-					  var circles = svg.selectAll("circle")
-					  	 .data(counts.slice(0,5))
-					  	 .enter()
-					  	 .append("circle");
-					  //Give circles attributes
-					  circles.attr("cx",function(d,i){
-					  	return (i * 50) + 50;
-					  })
-					  .attr("cy", h/2)
-					  .attr("r", function(d){
-					  	return d/2;
-					  })
-					  .attr("fill","yellow")
-					  .attr("stroke","orange")
-					  .attr("stroke-width", function(d){
-					  	return d/10;
-					  });
-
-					  d3.select("body").append("br");
-					  d3.select("body").append("br");
-					  d3.select("body").append("br");
-
-					  var newsvg = d3.select("body").append("svg");
-					  //Set size
-					  h = 400
-					  w = 750
-					  var barPadding = 1;
-					  var maxcount = twentycounts[0];
-					  newsvg.attr("width",w);
-					  newsvg.attr("height",h);
-
-					  //add circles
-					  var rects = newsvg.selectAll("rect")
-					  	 .data(twentycounts)
-					  	 .enter()
-					  	 .append("rect")
-					  	 .attr({
-					  	 	x: function(d,i) { return i * (w/ twentycounts.length);},
-					  	 	y: function(d) { return h - (d*h/maxcount);},
-					  	 	width: w / twentycounts.length - barPadding,
-					  	 	height: function(d) { return d*h/maxcount; },
-					  	 	fill: function(d) { return  "rgb(0, 0, " + (d*10) + ")";}
-					  	 });
-
-					  var texts = newsvg.selectAll("text")
-					  	  .data(twentycounts)
-					  	  .enter()
-					  	  .append("text")
-					  	  .text(function(d) {
-					  	  	return d;
-					  	  })
-					  	  .attr({
-					  	  	x: function(d,i) { return i * (w / twentycounts.length)+(w / twentycounts.length - barPadding) / 2;},
-					  	  	y: function(d) { return h - (d*h/maxcount)+14; },
-					  	  	"font-family": "sans-serif",
-					  	  	"font-size": "11px",
-					  	  	fill: "white",
-					  	  	"text-anchor": "middle"
-					  	  });
-
-					  d3.select("body").append("br");
-					  d3.select("body").append("br");
-					  d3.select("body").append("br");
-
-
-				var choreosvg = d3.select("body").append("svg")
-				h = 500;
-				w = 1000;
-				barPadding = 2;
-				choreosvg.attr("width",w).attr("height",h);
-
-				var fulldata = data.map(function(o){
-			  			return [o.choreographer,parseInt(o.count)];
-			  		});
-				var max_data = d3.max(fulldata, function(d){return d[1];});
-				var min_data = d3.min(fulldata, function(d){return d[1];});
-				var yScale = d3.scale.linear()
-									.domain([0,max_data])
-									.range ([0,h]);
-				var yScaleReversed = d3.scale.linear()
-									.domain([0,max_data])
-									.range ([h,0]);
-				var xScale = d3.scale.linear()
-									.domain([0,fulldata.length+3])
-									.range([0,w]);
-				var xScaleReversed = d3.scale.linear()
-									.domain([0,fulldata.length+3])
-									.range([w,0]);
-				var colorScale = d3.scale.sqrt()
-									.domain([0,max_data])
-									.rangeRound([50,255]);
-				
-				var rects = choreosvg.selectAll("rect")
-					  	 .data(fulldata)
-					  	 .enter()
-					  	 .append("rect")
-					  	 .attr({
-					  	 	x: function(d,i) { return xScale(i+3);},
-					  	 	y: function(d) { return h - yScale(d[1]);},
-					  	 	width: xScale(1) - barPadding,
-					  	 	height: function(d) { return yScale(d[1]); },
-					  	 	fill: function(d) { return  "rgb(0, 0, " + colorScale(d[1]) + ")";}
-					  	 });
-				var yAxis = d3.svg.axis()
-								  .scale(yScaleReversed)
-								  .orient("left")
-								  .ticks(5);
-
-				choreosvg.append("g")
-						 .attr("class","axis")
-						 .attr("transform", "translate(" + xScale(2.15) + ",0)")
-						 .call(yAxis);
-
-
-
-				}
-			  });
-
+	<script type="text/javascript">
+	d3.csv("choreos.csv", function(error,dataChoreo) {
+		if (error) {
+			console.log(error);
+		} else {
 			var dsv = d3.dsv("|","text/plain");
-			dsv("pieces.csv", function(error,data) {
+			dsv("pieces.csv", function(error,dataPiece) {
 				if (error) {
 					console.log(error);
 				} else {
-			  		var counts = data.map(function(o){
-			  			return o.count
-			  		});
-			  		var count = counts.reduce(function(a, b) {
-  						return parseInt(a) + parseInt(b);
+
+					var choreosvg = d3.select("body").append("svg")
+					h = 500;
+					w = 1000;
+					choreosvg.attr("width",w).attr("height",h);
+
+
+					var counts = dataChoreo.map(function(o){
+						return parseInt(o.count);
+					});
+					var twentycounts = counts.slice(0,20);
+					var choreographers = dataChoreo.map(function(o){
+						return o.choreographer;
+					});
+					var count = counts.reduce(function(a, b) {
+						return a+b;
 					});
 					console.log(count);
+
+					var choreodata = dataChoreo.map(function(o){
+						return [o.choreographer,parseInt(o.count)];
+					});
+					var thischoreodata = choreodata.slice(0,20);
+
+
+					var countsPiece = dataPiece.map(function(o){
+						return o.count
+					});
+					var countPiece = countsPiece.reduce(function(a, b) {
+						return parseInt(a) + parseInt(b);
+					});
+					console.log(count);
+
+					var piecedata = dataPiece.map(function(o){
+						return [o.piece,parseInt(o.count)];
+					})
+
+					var thispiecedata = piecedata.slice(0,20);
+
+
+					var max_data_choreo = d3.max(thischoreodata, function(d){return d[1];});
+					var min_data_choreo = d3.min(thischoreodata, function(d){return d[1];});
+					var yScaleChoreo = d3.scale.linear()
+					.domain([0,max_data_choreo])
+					.range ([0,h]);
+					var yScaleReversedChoreo = d3.scale.linear()
+					.domain([0,max_data_choreo])
+					.range ([h,0]);
+					var xScaleChoreo = d3.scale.linear()
+					.domain([0,thischoreodata.length])
+					.range([0,w]);
+					var xScaleReversedChoreo = d3.scale.linear()
+					.domain([0,thischoreodata.length])
+					.range([w,0]);
+					var colorScaleChoreo = d3.scale.sqrt()
+					.domain([0,max_data_choreo])
+					.rangeRound([50,255]);
+					var xOrdinalScaleChoreo = d3.scale.ordinal()
+					.domain(d3.range(thischoreodata.length))
+					.rangeRoundBands([0,w],0.05);
+
+
+					var max_data_pieces = d3.max(thispiecedata, function(d){return d[1];});
+					var min_data_pieces = d3.min(thispiecedata, function(d){return d[1];});
+					var yScalePiece = d3.scale.linear()
+					.domain([0,max_data_pieces])
+					.range ([0,h]);
+					var yScaleReversedPiece = d3.scale.linear()
+					.domain([0,max_data_pieces])
+					.range ([h,0]);
+					var xScalePiece = d3.scale.linear()
+					.domain([0,thispiecedata.length])
+					.range([0,w]);
+					var xScaleReversedPiece = d3.scale.linear()
+					.domain([0,thispiecedata.length])
+					.range([w,0]);
+					var colorScalePiece = d3.scale.sqrt()
+					.domain([0,max_data_pieces])
+					.rangeRound([50,200]);
+					var xOrdinalScalePiece = d3.scale.ordinal()
+					.domain(d3.range(thispiecedata.length))
+					.rangeRoundBands([0,w],0.05);
+
+
+
+
+					var rects = choreosvg.selectAll("rect")
+					.data(thischoreodata)
+					.enter()
+					.append("rect")
+					.attr({
+						x: function(d,i) { return xOrdinalScaleChoreo(i);},
+						y: function(d) { return h - yScaleChoreo(d[1]);},
+						width: xOrdinalScaleChoreo.rangeBand(),
+						height: function(d) { return yScaleChoreo(d[1]); },
+						fill: function(d) { return  "rgb(0, 0, " + colorScaleChoreo(d[1]) + ")";}
+					});
+
+					var texts = choreosvg.selectAll("text")
+					.data(thischoreodata)
+					.enter()
+					.append("text")
+					.text(function(d) {
+						return d[1];
+					})
+					.attr({
+						x: function(d,i) { return xOrdinalScaleChoreo(i)+xOrdinalScaleChoreo.rangeBand() / 2;},
+						y: function(d) { return h - yScaleChoreo(d[1])+14; },
+						"font-family": "sans-serif",
+						"font-size": "11px",
+						fill: "white",
+						"text-anchor": "middle"
+					});
+
+					var titletext = choreosvg.append("text")
+											 .text("Top 20 Choreographers")
+											 .attr({
+											 	x: w-400,
+											 	y: 50,
+											 	"font-family": "sans-serif",
+												"font-size": "30px",
+												fill: "blue"
+											 });
+
+
+					var onChoreos = true;
+
+					choreosvg.on("click", function() {
+
+						if (onChoreos){
+
+						choreosvg.selectAll("rect")
+						.data(thispiecedata)
+						.transition()
+						.delay(function(d,i){return i*100;})
+						.duration(500)
+						.attr("y",function(d){
+							return h-yScalePiece(d[1]);
+						})
+						.attr("height",function(d){
+							return yScalePiece(d[1]);
+						})
+						.attr("fill", function(d) {
+							return "rgb(" + colorScalePiece(d[1]) + ",0,0)";
+						});
+
+						choreosvg.selectAll("text")
+						.data(thispiecedata)
+						.transition()
+						.delay(function(d,i){return i*100;})
+						.duration(500)
+						.text(function(d) {
+							return d[1];
+						})
+						.attr("x", function(d,i) {
+							return xOrdinalScalePiece(i) + xOrdinalScalePiece.rangeBand()/2;
+						})
+						.attr("y", function(d) {
+							return h - yScalePiece(d[1])+14;
+						});
+
+						titletext.transition()
+								 .delay(500)
+								 .duration(500)
+								 .text("Top 20 Pieces")
+								 .attr("fill", "red");
+
+						onChoreos = false;
+
+					} else {
+
+
+						choreosvg.selectAll("rect")
+						.data(thischoreodata)
+						.transition()
+						.delay(function(d,i){return i*100;})
+						.duration(500)
+						.attr("y",function(d){
+							return h-yScaleChoreo(d[1]);
+						})
+						.attr("height",function(d){
+							return yScaleChoreo(d[1]);
+						})
+						.attr("fill", function(d) {
+							return "rgb(0,0," + colorScaleChoreo(d[1]) + ")";
+						});
+
+						choreosvg.selectAll("text")
+						.data(thischoreodata)
+						.transition()
+						.delay(function(d,i){return i*100;})
+						.duration(500)
+						.text(function(d) {
+							return d[1];
+						})
+						.attr("x", function(d,i) {
+							return xOrdinalScaleChoreo(i) + xOrdinalScaleChoreo.rangeBand()/2;
+						})
+						.attr("y", function(d) {
+							return h - yScaleChoreo(d[1])+14;
+						});
+
+						titletext.transition()
+								 .delay(500)
+								 .duration(500)
+								 .text("Top 20 Choreographers")
+								 .attr("fill", "blue");
+
+
+						onChoreos = true;
+					}
+
+
+					});
+
+
+
+
 				}
-			  });
-		</script>
-	</body>
+			});
+		}
+	});
+</script>
+</body>
 
 
 </html>
