@@ -7,10 +7,15 @@
 	<link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
-	<p>Click on the graph to switch from Top 20 Choreographers to Top 20 Pieces.</p>
+	<p>Click on the graph title to switch from Top 20 Choreographers to Top 20 Pieces.</p>
 
 	<br>
 	<br>
+
+	<div id="tooltipPieceChoreo" class="hidden">
+		<p><strong><span id="namePieceChoreo">Important Label Heading</span></strong></p>
+		<p><span id="valuePieceChoreo">100</span></p>
+	</div>
 
 	<script type="text/javascript">
 	d3.csv("choreos.csv", function(error,dataChoreo) {
@@ -149,7 +154,7 @@
 
 					var onChoreos = true;
 
-					choreosvg.on("click", function() {
+					titletext.on("click", function() {
 
 						if (onChoreos){
 
@@ -235,15 +240,56 @@
 					}
 
 
-					});
+					}); // end of on click
+
+				rects.on("mouseover", function(d) {
+						d3.select(this)
+						  .attr("fill","orange");
+
+						var xPosition = parseFloat(d3.select(this).attr("x")) + xOrdinalScaleChoreo.rangeBand()/2;
+						var yPosition = parseFloat(d3.select(this).attr("y"))/2 + h/2;
+
+						var tooltipPieceChoreo = d3.select("#tooltipPieceChoreo")
+
+						tooltipPieceChoreo.style("left", xPosition+"px")
+						  .style("top", yPosition+"px")
+						  .select("#valuePieceChoreo")
+						  .text(function(){
+						  	if (onChoreos) {
+						  		return d[1] + " pieces";
+						  	} else {
+						  		return d[1] + " performances";
+						  	}
+
+						  });
+
+						tooltipPieceChoreo.select("#namePieceChoreo")
+						  .text(d[0] + ": ");
+
+						tooltipPieceChoreo.classed("hidden", false);
 
 
+						}); // end of mouseover
+
+				rects.on("mouseout", function(d) {
+						 	d3.select(this)
+						 	  .transition()
+						 	  .duration(250)
+						 	  .attr("fill", function(){
+						 	  	if (onChoreos) {
+						 	  		return "rgb(0,0," + colorScaleChoreo(d[1]) + ")";
+						 	  	} else {
+						 	  		return "rgb(" + colorScalePiece(d[1]) + ",0,0)";
+						 	  	}
+						 	  });
+						 	d3.select("#tooltipPieceChoreo").classed("hidden",true);
+						 }); //end of mouseout
 
 
-				}
-			});
-		}
-	});
+				} //end of inner else
+			}); // end of dsv function
+		} // end of outer else
+	}); // end of csv function
 </script>
 </body>
 
