@@ -62,9 +62,57 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 				var yScales = [yScaleChoreo,yScalePiece];
 				var xOrdinalScales = [xOrdinalScaleChoreo,xOrdinalScalePiece];
 				var colorScales = [colorScaleChoreo,colorScalePiece];
+				var colorRanges = [[[0,50,50],[20,250,250]],[[50,25,0],[250,50,0]]];
 				var names = ["Choreographers", "Ballets"];
 				var quantifications = ["pieces", "performances"];
-				var colors = ["navy","maroon"];
+				var colors = [[0,0,128],[128,0,0]];
+				var highlight_color = [255,165,0];
+
+
+				function removeAllRectsAndText() {
+					choreosvg.selectAll("rect")
+					.transition()
+					.duration(500)
+					// .attr("x",w)
+					.remove();
+
+					choreosvg.selectAll("text")
+					.transition()
+					.duration(500)
+					.remove();
+				}
+
+				function colorRects(color1,color2,yValue,yMaxValue) {
+
+					var scaleR = d3.scale.sqrt()
+					.domain([0,yMaxValue])
+					.rangeRound([color1[0],color2[0]]);
+					var scaleG = d3.scale.sqrt()
+					.domain([0,yMaxValue])
+					.rangeRound([color1[1],color2[1]]);
+					var scaleB = d3.scale.sqrt()
+					.domain([0,yMaxValue])
+					.rangeRound([color1[2],color2[2]]);
+
+					return  rgbArrayToString([scaleR(yValue),scaleG(yValue),scaleB(yValue)]);
+				}
+
+				function colorCurrentRects(current_data,yValue) {
+					return colorRects(colorRanges[current_data][0],
+						colorRanges[current_data][1],
+						yValue,
+						max_data[current_data]);
+				}
+
+				function rgbArrayToString(rgb) {
+					return "rgb(" + rgb[0] + "," + rgb[1] + "," + rgb[2] + ")";
+				}
+
+
+
+
+
+
 
 				var rects = choreosvg.selectAll("rect")
 				.data(thisdata[current_data])
@@ -75,7 +123,7 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 					y: function(d) { return h - yScales[current_data](d[1]);},
 					width: xOrdinalScales[current_data].rangeBand(),
 					height: function(d) { return yScales[current_data](d[1]); },
-					fill: function(d) { return  "rgb(0, 0, " + colorScales[current_data](d[1]) + ")";}
+					fill: function(d) { return colorCurrentRects(current_data,d[1]); }
 				});
 
 				var texts = choreosvg.selectAll("text")
@@ -103,7 +151,7 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 					y: 50,
 					"font-family": font_family,
 					"font-size": "30px",
-					fill: colors[current_data]
+					fill: rgbArrayToString(colors[current_data])
 				});
 				titletext[1] = choreosvg.append("text")
 				.text(thisdata[current_data].length)
@@ -113,7 +161,7 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 					"font-family": font_family,
 					"font-size": "30px",
 					"text-decoration": "underline",
-					fill: colors[current_data]
+					fill: rgbArrayToString(colors[current_data])
 				});
 				titletext[2] = choreosvg.append("text")
 				.text(" " + names[current_data])
@@ -123,7 +171,7 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 					"font-family": font_family,
 					"text-decoration": "underline",
 					"font-size": "30px",
-					fill: colors[current_data]
+					fill: rgbArrayToString(colors[current_data])
 				});
 
 				var infodetails = choreosvg.append("text")
@@ -134,7 +182,7 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 					width: "350px",
 					"font-family": font_family,
 					"font-size": "20px",
-					fill: colors[current_data]				
+					fill: rgbArrayToString(colors[current_data])
 				});
 
 
@@ -142,177 +190,167 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 					current_num_bars += 1;
 					current_num_bars %= num_bars.length;
 
-					// Need to update:
-					// thisdata
-					// max_data
-					// min_data
-					// yScales
-					// xOrdinalScales
-					// colorScales
+				// Need to update:
+				// thisdata
+				// max_data
+				// min_data
+				// yScales
+				// xOrdinalScales
+				// colorScales
 
-					for (var i = 0; i < thisdata.length; i++) {
-						thisdata[i] = alldata[i].slice(0,num_bars[current_num_bars]);
-						max_data[i] = d3.max(thisdata[i], function(d){return d[1];});
-						min_data[i] = d3.min(thisdata[i], function(d){return d[1];});
-						yScales[i].domain([0,max_data[i]]);
-						xOrdinalScales[i].domain(d3.range(thisdata[i].length));
-						colorScales[i].domain([0,max_data[i]]);
-					};
+				for (var i = 0; i < thisdata.length; i++) {
+					thisdata[i] = alldata[i].slice(0,num_bars[current_num_bars]);
+					max_data[i] = d3.max(thisdata[i], function(d){return d[1];});
+					min_data[i] = d3.min(thisdata[i], function(d){return d[1];});
+					yScales[i].domain([0,max_data[i]]);
+					xOrdinalScales[i].domain(d3.range(thisdata[i].length));
+					colorScales[i].domain([0,max_data[i]]);
+				};
 
-					choreosvg.selectAll("rect").data(thisdata[current_data])
-
-
-					// Then remove
-					// rects 
-					// text
-
-					removeAllRectsAndText(choreosvg);
+				choreosvg.selectAll("rect").data(thisdata[current_data])
 
 
-					// Then add
-					// rects 
-					// text
-					rects = choreosvg.selectAll("rect")
-					.data(thisdata[current_data])
-					.enter()
-					.append("rect")
-					.attr({
-						x: function(d,i) { return xOrdinalScales[current_data](i);},
-						y: function(d) { return h - yScales[current_data](d[1]);},
-						width: xOrdinalScales[current_data].rangeBand(),
-						height: function(d) { return yScales[current_data](d[1]); },
-						fill: function(d) { return  "rgb(0, 0, " + colorScales[current_data](d[1]) + ")";}
-					});
+				// Then remove
+				// rects 
+				// text
 
-					texts = choreosvg.selectAll("text")
-					.data(thisdata[current_data])
-					.enter()
-					.append("text")
-					.text(function(d) {
-						return d[1];
-					})
-					.attr({
-						x: function(d,i) { return xOrdinalScales[current_data](i)+xOrdinalScales[current_data].rangeBand() / 2;},
-						y: function(d) { return h - yScales[current_data](d[1])+14; },
-						"font-family": font_family,
-						"font-size": "11px",
-						fill: "white",
-						"text-anchor": "middle"
-					});
+				removeAllRectsAndText();
 
 
-
-
-					titletext[1].transition()
-					.delay(250)
-					.duration(250)
-					.text(num_bars[current_num_bars])
-					.attr("fill", colors[current_data]);
+				// Then add
+				// rects 
+				// text
+				rects = choreosvg.selectAll("rect")
+				.data(thisdata[current_data])
+				.enter()
+				.append("rect")
+				.attr({
+					x: function(d,i) { return xOrdinalScales[current_data](i);},
+					y: function(d) { return h - yScales[current_data](d[1]);},
+					width: xOrdinalScales[current_data].rangeBand(),
+					height: function(d) { return yScales[current_data](d[1]); },
+					fill: function(d) { return colorCurrentRects(current_data,d[1]); }
 				});
-				// End of on click for titletext[1]
+
+				texts = choreosvg.selectAll("text")
+				.data(thisdata[current_data])
+				.enter()
+				.append("text")
+				.text(function(d) {
+					return d[1];
+				})
+				.attr({
+					x: function(d,i) { return xOrdinalScales[current_data](i)+xOrdinalScales[current_data].rangeBand() / 2;},
+					y: function(d) { return h - yScales[current_data](d[1])+14; },
+					"font-family": font_family,
+					"font-size": "11px",
+					fill: "white",
+					"text-anchor": "middle"
+				});
 
 
 
-				titletext[2].on("click", function() {
 
-					current_data += 1;
-					current_data %= thisdata.length;
-					
-					choreosvg.selectAll("rect")
-					.data(thisdata[current_data])
-					.transition()
-					.delay(function(d,i){return i*50;})
-					.duration(250)
-					.attr("y",function(d){
-						return h-yScales[current_data](d[1]);
-					})
-					.attr("height",function(d){
-						return yScales[current_data](d[1]);
-					})
-					.attr("fill", function(d) {
-						if (current_data == 0) {
-							return "rgb(0,0," + colorScales[current_data](d[1]) + ")";
-						} else {
-							return "rgb(" + colorScales[current_data](d[1]) + ",0,0)";
-						}
+				titletext[1].transition()
+				.delay(250)
+				.duration(250)
+				.text(num_bars[current_num_bars])
+				.attr("fill", rgbArrayToString(colors[current_data]));
+			});
+			// End of on click for titletext[1]
+
+
+
+			titletext[2].on("click", function() {
+
+				current_data += 1;
+				current_data %= thisdata.length;
+				
+				choreosvg.selectAll("rect")
+				.data(thisdata[current_data])
+				.transition()
+				.delay(function(d,i){return i*50;})
+				.duration(250)
+				.attr("y",function(d){
+					return h-yScales[current_data](d[1]);
+				})
+				.attr("height",function(d){
+					return yScales[current_data](d[1]);
+				})
+				.attr("fill", function(d) {
+					return colorCurrentRects(current_data,d[1]); 
 					});
 
-					choreosvg.selectAll("text")
-					.data(thisdata[current_data])
-					.transition()
-					.delay(function(d,i){return i*50;})
-					.duration(250)
-					.text(function(d) {
-						return d[1];
-					})
-					.attr("x", function(d,i) {
-						return xOrdinalScales[current_data](i) + xOrdinalScales[current_data].rangeBand()/2;
-					})
-					.attr("y", function(d) {
-						return h - yScales[current_data](d[1])+14;
-					});
+				choreosvg.selectAll("text")
+				.data(thisdata[current_data])
+				.transition()
+				.delay(function(d,i){return i*50;})
+				.duration(250)
+				.text(function(d) {
+					return d[1];
+				})
+				.attr("x", function(d,i) {
+					return xOrdinalScales[current_data](i) + xOrdinalScales[current_data].rangeBand()/2;
+				})
+				.attr("y", function(d) {
+					return h - yScales[current_data](d[1])+14;
+				});
 
 
-					titletext[0].transition()
-					.delay(250)
-					.duration(250)
-					.attr("fill", colors[current_data]);
-					titletext[1].transition()
-					.delay(250)
-					.duration(250)
-					.text(thisdata[current_data].length)
-					.attr("fill", colors[current_data]);
-					titletext[2].transition()
-					.delay(250)
-					.duration(250)
-					.text(" " + names[current_data])
-					.attr("fill", colors[current_data]);
+				titletext[0].transition()
+				.delay(250)
+				.duration(250)
+				.attr("fill", rgbArrayToString(colors[current_data]));
+				titletext[1].transition()
+				.delay(250)
+				.duration(250)
+				.text(thisdata[current_data].length)
+				.attr("fill", rgbArrayToString(colors[current_data]));
+				titletext[2].transition()
+				.delay(250)
+				.duration(250)
+				.text(" " + names[current_data])
+				.attr("fill", rgbArrayToString(colors[current_data]));
 
 
 
-				}); 
-				// end of on click for titletext[2]
+			}); 
+			// end of on click for titletext[2]
 
-				choreosvg.selectAll("rect").on("mouseover", function(d) {
+			choreosvg.selectAll("rect").on("mouseover", function(d) {
+				d3.select(this)
+				.attr("fill",rgbArrayToString(highlight_color));
+
+				var xPosition = parseFloat(d3.select(this).attr("x")) + xOrdinalScales[current_data].rangeBand()/2;
+				var yPosition = parseFloat(d3.select(this).attr("y"))/2 + h/2;
+
+				infodetails.transition()
+				.duration(50)
+				.text(function(){
+					return d[0] + ": " + d[1] + " " + quantifications[current_data];
+				})
+				.attr("fill",function(){
+					return rgbArrayToString(colors[current_data]);
+				});
+
+				infodetails.classed("hidden", false);
+
+
+			}); 
+				// end of mouseover for bars
+
+				choreosvg.selectAll("rect").on("mouseout", function(d) {
 					d3.select(this)
-					.attr("fill","orange");
-
-					var xPosition = parseFloat(d3.select(this).attr("x")) + xOrdinalScales[current_data].rangeBand()/2;
-					var yPosition = parseFloat(d3.select(this).attr("y"))/2 + h/2;
-
-					infodetails.transition()
-					.duration(50)
-					.text(function(){
-						return d[0] + ": " + d[1] + " " + quantifications[current_data];
-					})
-					.attr("fill",function(){
-						return colors[current_data];
-					});
-
-					infodetails.classed("hidden", false);
-
-
+					.transition()
+					.duration(250)
+					.attr("fill", colorCurrentRects(current_data,d[1]));
+					infodetails.classed("hidden",true);
 				}); 
-					// end of mouseover for bars
-
-					choreosvg.selectAll("rect").on("mouseout", function(d) {
-						d3.select(this)
-						.transition()
-						.duration(250)
-						.attr("fill", function(){
-							if (current_data == 0) {
-								return "rgb(0,0," + colorScales[current_data](d[1]) + ")";
-							} else {
-								return "rgb(" + colorScales[current_data](d[1]) + ",0,0)";
-							}
-						});
-						infodetails.classed("hidden",true);
-					}); 
-					 //end of mouseout for bars
+				 //end of mouseout for bars
 
 
-					} 
-			//end of inner else
+				} 
+		//end of inner else
 		}); 
 		// end of dsv function
 	} 
@@ -320,15 +358,3 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 }); 
 // end of csv function
 
-function removeAllRectsAndText(svg) {
-					svg.selectAll("rect")
-					.transition()
-					.duration(500)
-					// .attr("x",w)
-					.remove();
-
-					svg.selectAll("text")
-					.transition()
-					.duration(500)
-					.remove();
-}
