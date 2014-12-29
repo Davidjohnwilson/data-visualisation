@@ -1,0 +1,13 @@
+@font-face {
+font-family: 'GulimFontFamily';
+src: url('/fonts/gulim.eot?#iefix') format('embedded-opentype'),
+     url('/fonts/gulim.woff') format('woff'),
+     url('/fonts/gulim.ttc')  format('truetype'),
+     url('/fonts/gulim.svg#svgFontName') format('svg');
+}
+
+h1,h2,h3,h4,h5,text,p {
+	font-family: 'GulimFontFamily';
+}
+
+text.hidden { fill: transparent; }
