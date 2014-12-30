@@ -10,7 +10,10 @@ Currently includes:
 
  Easily create an interactive SVG from input data, showing multiple "Top 20" lists. The end user can click to change the number of bars shown, or the data being displayed. Can accept an arbitrary number of data sets.
 
- ### Function call:
+ ### Usage:
+
+Include `toptwenty.js` in your page, and then call `toptwenty` with the following syntax:
+
  ```javascript
 		toptwenty(svg_id,
 				  h,
