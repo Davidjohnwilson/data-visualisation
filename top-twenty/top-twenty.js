@@ -1,12 +1,11 @@
-function sleep(milliseconds) {
-  var start = new Date().getTime();
-  for (var i = 0; i < 1e7; i++) {
-    if ((new Date().getTime() - start) > milliseconds){
-      break;
-    }
-  }
-}
-
+// Top-Twenty
+//	by David Wilson
+//
+//	An interactive "Top 20" list that allows you to change data sets and number of displayed
+//  values. Each bar shows the value and is colored according to the value. Hovering over a 
+//  a bar shows further information about the data.
+//
+// Inspired by "Interactive Data Visualization for the Web" by Scott Murray (O'Reilly)
 
 d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 	if (error) {
@@ -37,6 +36,10 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 
 				var thischoreodata = choreodata.slice(0,num_bars[current_num_bars]);
 				var thispiecedata = piecedata.slice(0,num_bars[current_num_bars]);
+				var blankchoreodata = [];
+				var blankpiecedata = [];
+				for (var i = 0; i < thischoreodata.length; i++) { blankchoreodata.push([0,0])};
+				for (var i = 0; i < thispiecedata.length; i++) { blankpiecedata.push([0,0])};
 
 				var max_data_choreo = d3.max(thischoreodata, function(d){return d[1];});
 				var min_data_choreo = d3.min(thischoreodata, function(d){return d[1];});
@@ -66,6 +69,7 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 				var current_data = 0;
 				var alldata = [choreodata,piecedata];
 				var thisdata = [thischoreodata,thispiecedata];
+				var blankdata = [blankchoreodata,blankpiecedata];
 				var max_data = [max_data_choreo,max_data_pieces];
 				var min_data = [min_data_choreo,min_data_pieces];
 				var yScales = [yScaleChoreo,yScalePiece];
@@ -76,6 +80,8 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 				var quantifications = ["pieces", "performances"];
 				var colors = [[0,0,128],[128,0,0]];
 				var highlight_color = [255,165,0];
+				var rect_transition_time = 250;
+				var total_rect_transition = 750;
 
 				var rects;
 				var texts;
@@ -116,8 +122,8 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 					choreosvg.selectAll("rect")
 					.data(thisdata[current_data])
 					.transition()
-					.delay(function(d,i){return i*50;})
-					.duration(250)
+					.delay(function(d,i){return i*total_rect_transition/thisdata[current_data].length;})
+					.duration(rect_transition_time)
 					.attr("y",function(d){
 						return h-yScales[current_data](d[1]);
 					})
@@ -131,8 +137,8 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 					choreosvg.selectAll("text")
 					.data(thisdata[current_data])
 					.transition()
-					.delay(function(d,i){return i*50;})
-					.duration(250)
+					.delay(function(d,i){return i*total_rect_transition/thisdata[current_data].length;})
+					.duration(rect_transition_time)
 					.text(function(d) {
 						return d[1];
 					})
@@ -145,17 +151,17 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 
 
 					titletext[0].transition()
-					.delay(250)
-					.duration(250)
+					.delay(rect_transition_time)
+					.duration(rect_transition_time)
 					.attr("fill", rgbArrayToString(colors[current_data]));
 					titletext[1].transition()
-					.delay(250)
-					.duration(250)
+					.delay(rect_transition_time)
+					.duration(rect_transition_time)
 					.text(thisdata[current_data].length)
 					.attr("fill", rgbArrayToString(colors[current_data]));
 					titletext[2].transition()
-					.delay(250)
-					.duration(250)
+					.delay(rect_transition_time)
+					.duration(rect_transition_time)
 					.text(" " + names[current_data])
 					.attr("fill", rgbArrayToString(colors[current_data]));
 
@@ -164,19 +170,19 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 				function createBars() {
 
 					rects = choreosvg.selectAll("rect")
-						.data(thisdata[current_data])
+						.data(blankdata[current_data])
 						.enter()
 						.append("rect")
 						.attr({
 							x: function(d,i) { return xOrdinalScales[current_data](i);},
-							y: function(d) { return h - yScales[current_data](d[1]);},
+							y: h,
 							width: xOrdinalScales[current_data].rangeBand(),
-							height: function(d) { return yScales[current_data](d[1]); },
-							fill: function(d) { return colorCurrentRects(d[1]); }
+							height:0,
+							fill: "white"
 						});
 
 					texts = choreosvg.selectAll("text")
-						.data(thisdata[current_data])
+						.data(blankdata[current_data])
 						.enter()
 						.append("text")
 						.text(function(d) {
@@ -184,7 +190,7 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 						})
 						.attr({
 							x: function(d,i) { return xOrdinalScales[current_data](i)+xOrdinalScales[current_data].rangeBand() / 2;},
-							y: function(d) { return h - yScales[current_data](d[1])+14; },
+							y: h,
 							"font-family": font_family,
 							"font-size": "11px",
 							fill: "white",
@@ -234,6 +240,9 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 							fill: rgbArrayToString(colors[current_data])
 						});
 
+					// populate data
+					updateBars();
+
 					//Click to change number of entries
 					titletext[1].on("click", function() {
 						current_num_bars += 1;
@@ -242,6 +251,8 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 						//Update data values
 						for (var i = 0; i < thisdata.length; i++) {
 							thisdata[i] = alldata[i].slice(0,num_bars[current_num_bars]);
+							blankdata[i] = [];
+							for (var j = 0; j < thisdata[i].length; j++) { blankdata[i].push([0,0])};
 							max_data[i] = d3.max(thisdata[i], function(d){return d[1];});
 							min_data[i] = d3.min(thisdata[i], function(d){return d[1];});
 							yScales[i].domain([0,max_data[i]]);
