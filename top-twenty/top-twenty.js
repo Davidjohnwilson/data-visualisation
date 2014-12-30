@@ -1,3 +1,13 @@
+function sleep(milliseconds) {
+  var start = new Date().getTime();
+  for (var i = 0; i < 1e7; i++) {
+    if ((new Date().getTime() - start) > milliseconds){
+      break;
+    }
+  }
+}
+
+
 d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 	if (error) {
 		console.log(error);
@@ -16,7 +26,7 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 
 				var font_family = 'GulimFontFamily';
 				var num_bars = [5,10,20,50];
-				var current_num_bars = 2;
+				var current_num_bars = 3;
 
 				var choreodata = dataChoreo.map(function(o){
 					return [o.choreographer,parseInt(o.count)];
@@ -52,7 +62,6 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 				.domain([0,max_data_pieces])
 				.rangeRound([50,200]);
 
-
 				//Set up combined data sources
 				var current_data = 0;
 				var alldata = [choreodata,piecedata];
@@ -68,18 +77,13 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 				var colors = [[0,0,128],[128,0,0]];
 				var highlight_color = [255,165,0];
 
+				var rects;
+				var texts;
+				var titletext;
+				var infodetails;
 
 				function removeAllRectsAndText() {
-					choreosvg.selectAll("rect")
-					.transition()
-					.duration(500)
-					// .attr("x",w)
-					.remove();
-
-					choreosvg.selectAll("text")
-					.transition()
-					.duration(500)
-					.remove();
+					choreosvg.selectAll("*").remove();
 				}
 
 				function colorRects(color1,color2,yValue,yMaxValue) {
@@ -97,7 +101,7 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 					return  rgbArrayToString([scaleR(yValue),scaleG(yValue),scaleB(yValue)]);
 				}
 
-				function colorCurrentRects(current_data,yValue) {
+				function colorCurrentRects(yValue) {
 					return colorRects(colorRanges[current_data][0],
 						colorRanges[current_data][1],
 						yValue,
@@ -108,249 +112,200 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 					return "rgb(" + rgb[0] + "," + rgb[1] + "," + rgb[2] + ")";
 				}
 
+				function updateBars() {
+					choreosvg.selectAll("rect")
+					.data(thisdata[current_data])
+					.transition()
+					.delay(function(d,i){return i*50;})
+					.duration(250)
+					.attr("y",function(d){
+						return h-yScales[current_data](d[1]);
+					})
+					.attr("height",function(d){
+						return yScales[current_data](d[1]);
+					})
+					.attr("fill", function(d) {
+						return colorCurrentRects(d[1]); 
+						});
 
-
-
-
-
-
-				var rects = choreosvg.selectAll("rect")
-				.data(thisdata[current_data])
-				.enter()
-				.append("rect")
-				.attr({
-					x: function(d,i) { return xOrdinalScales[current_data](i);},
-					y: function(d) { return h - yScales[current_data](d[1]);},
-					width: xOrdinalScales[current_data].rangeBand(),
-					height: function(d) { return yScales[current_data](d[1]); },
-					fill: function(d) { return colorCurrentRects(current_data,d[1]); }
-				});
-
-				var texts = choreosvg.selectAll("text")
-				.data(thisdata[current_data])
-				.enter()
-				.append("text")
-				.text(function(d) {
-					return d[1];
-				})
-				.attr({
-					x: function(d,i) { return xOrdinalScales[current_data](i)+xOrdinalScales[current_data].rangeBand() / 2;},
-					y: function(d) { return h - yScales[current_data](d[1])+14; },
-					"font-family": font_family,
-					"font-size": "11px",
-					fill: "white",
-					"text-anchor": "middle"
-				});
-
-				var titletext = [0,0,0];
-
-				titletext[0] = choreosvg.append("text")
-				.text("Top ")
-				.attr({
-					x: w-400,
-					y: 50,
-					"font-family": font_family,
-					"font-size": "30px",
-					fill: rgbArrayToString(colors[current_data])
-				});
-				titletext[1] = choreosvg.append("text")
-				.text(thisdata[current_data].length)
-				.attr({
-					x: w-340,
-					y: 50,
-					"font-family": font_family,
-					"font-size": "30px",
-					"text-decoration": "underline",
-					fill: rgbArrayToString(colors[current_data])
-				});
-				titletext[2] = choreosvg.append("text")
-				.text(" " + names[current_data])
-				.attr({
-					x: w-300,
-					y: 50,
-					"font-family": font_family,
-					"text-decoration": "underline",
-					"font-size": "30px",
-					fill: rgbArrayToString(colors[current_data])
-				});
-
-				var infodetails = choreosvg.append("text")
-				.text("")
-				.attr({
-					x: w-400,
-					y: 85,
-					width: "350px",
-					"font-family": font_family,
-					"font-size": "20px",
-					fill: rgbArrayToString(colors[current_data])
-				});
-
-
-				titletext[1].on("click", function() {
-					current_num_bars += 1;
-					current_num_bars %= num_bars.length;
-
-				// Need to update:
-				// thisdata
-				// max_data
-				// min_data
-				// yScales
-				// xOrdinalScales
-				// colorScales
-
-				for (var i = 0; i < thisdata.length; i++) {
-					thisdata[i] = alldata[i].slice(0,num_bars[current_num_bars]);
-					max_data[i] = d3.max(thisdata[i], function(d){return d[1];});
-					min_data[i] = d3.min(thisdata[i], function(d){return d[1];});
-					yScales[i].domain([0,max_data[i]]);
-					xOrdinalScales[i].domain(d3.range(thisdata[i].length));
-					colorScales[i].domain([0,max_data[i]]);
-				};
-
-				choreosvg.selectAll("rect").data(thisdata[current_data])
-
-
-				// Then remove
-				// rects 
-				// text
-
-				removeAllRectsAndText();
-
-
-				// Then add
-				// rects 
-				// text
-				rects = choreosvg.selectAll("rect")
-				.data(thisdata[current_data])
-				.enter()
-				.append("rect")
-				.attr({
-					x: function(d,i) { return xOrdinalScales[current_data](i);},
-					y: function(d) { return h - yScales[current_data](d[1]);},
-					width: xOrdinalScales[current_data].rangeBand(),
-					height: function(d) { return yScales[current_data](d[1]); },
-					fill: function(d) { return colorCurrentRects(current_data,d[1]); }
-				});
-
-				texts = choreosvg.selectAll("text")
-				.data(thisdata[current_data])
-				.enter()
-				.append("text")
-				.text(function(d) {
-					return d[1];
-				})
-				.attr({
-					x: function(d,i) { return xOrdinalScales[current_data](i)+xOrdinalScales[current_data].rangeBand() / 2;},
-					y: function(d) { return h - yScales[current_data](d[1])+14; },
-					"font-family": font_family,
-					"font-size": "11px",
-					fill: "white",
-					"text-anchor": "middle"
-				});
-
-
-
-
-				titletext[1].transition()
-				.delay(250)
-				.duration(250)
-				.text(num_bars[current_num_bars])
-				.attr("fill", rgbArrayToString(colors[current_data]));
-			});
-			// End of on click for titletext[1]
-
-
-
-			titletext[2].on("click", function() {
-
-				current_data += 1;
-				current_data %= thisdata.length;
-				
-				choreosvg.selectAll("rect")
-				.data(thisdata[current_data])
-				.transition()
-				.delay(function(d,i){return i*50;})
-				.duration(250)
-				.attr("y",function(d){
-					return h-yScales[current_data](d[1]);
-				})
-				.attr("height",function(d){
-					return yScales[current_data](d[1]);
-				})
-				.attr("fill", function(d) {
-					return colorCurrentRects(current_data,d[1]); 
+					choreosvg.selectAll("text")
+					.data(thisdata[current_data])
+					.transition()
+					.delay(function(d,i){return i*50;})
+					.duration(250)
+					.text(function(d) {
+						return d[1];
+					})
+					.attr("x", function(d,i) {
+						return xOrdinalScales[current_data](i) + xOrdinalScales[current_data].rangeBand()/2;
+					})
+					.attr("y", function(d) {
+						return h - yScales[current_data](d[1])+14;
 					});
 
-				choreosvg.selectAll("text")
-				.data(thisdata[current_data])
-				.transition()
-				.delay(function(d,i){return i*50;})
-				.duration(250)
-				.text(function(d) {
-					return d[1];
-				})
-				.attr("x", function(d,i) {
-					return xOrdinalScales[current_data](i) + xOrdinalScales[current_data].rangeBand()/2;
-				})
-				.attr("y", function(d) {
-					return h - yScales[current_data](d[1])+14;
-				});
 
-
-				titletext[0].transition()
-				.delay(250)
-				.duration(250)
-				.attr("fill", rgbArrayToString(colors[current_data]));
-				titletext[1].transition()
-				.delay(250)
-				.duration(250)
-				.text(thisdata[current_data].length)
-				.attr("fill", rgbArrayToString(colors[current_data]));
-				titletext[2].transition()
-				.delay(250)
-				.duration(250)
-				.text(" " + names[current_data])
-				.attr("fill", rgbArrayToString(colors[current_data]));
-
-
-
-			}); 
-			// end of on click for titletext[2]
-
-			choreosvg.selectAll("rect").on("mouseover", function(d) {
-				d3.select(this)
-				.attr("fill",rgbArrayToString(highlight_color));
-
-				var xPosition = parseFloat(d3.select(this).attr("x")) + xOrdinalScales[current_data].rangeBand()/2;
-				var yPosition = parseFloat(d3.select(this).attr("y"))/2 + h/2;
-
-				infodetails.transition()
-				.duration(50)
-				.text(function(){
-					return d[0] + ": " + d[1] + " " + quantifications[current_data];
-				})
-				.attr("fill",function(){
-					return rgbArrayToString(colors[current_data]);
-				});
-
-				infodetails.classed("hidden", false);
-
-
-			}); 
-				// end of mouseover for bars
-
-				choreosvg.selectAll("rect").on("mouseout", function(d) {
-					d3.select(this)
-					.transition()
+					titletext[0].transition()
+					.delay(250)
 					.duration(250)
-					.attr("fill", colorCurrentRects(current_data,d[1]));
-					infodetails.classed("hidden",true);
-				}); 
-				 //end of mouseout for bars
+					.attr("fill", rgbArrayToString(colors[current_data]));
+					titletext[1].transition()
+					.delay(250)
+					.duration(250)
+					.text(thisdata[current_data].length)
+					.attr("fill", rgbArrayToString(colors[current_data]));
+					titletext[2].transition()
+					.delay(250)
+					.duration(250)
+					.text(" " + names[current_data])
+					.attr("fill", rgbArrayToString(colors[current_data]));
+
+				}
+
+				function createBars() {
+
+					rects = choreosvg.selectAll("rect")
+						.data(thisdata[current_data])
+						.enter()
+						.append("rect")
+						.attr({
+							x: function(d,i) { return xOrdinalScales[current_data](i);},
+							y: function(d) { return h - yScales[current_data](d[1]);},
+							width: xOrdinalScales[current_data].rangeBand(),
+							height: function(d) { return yScales[current_data](d[1]); },
+							fill: function(d) { return colorCurrentRects(d[1]); }
+						});
+
+					texts = choreosvg.selectAll("text")
+						.data(thisdata[current_data])
+						.enter()
+						.append("text")
+						.text(function(d) {
+							return d[1];
+						})
+						.attr({
+							x: function(d,i) { return xOrdinalScales[current_data](i)+xOrdinalScales[current_data].rangeBand() / 2;},
+							y: function(d) { return h - yScales[current_data](d[1])+14; },
+							"font-family": font_family,
+							"font-size": "11px",
+							fill: "white",
+							"text-anchor": "middle"
+						});
+
+					titletext = [0,0,0];
+
+					titletext[0] = choreosvg.append("text")
+						.text("Top ")
+						.attr({
+							x: w-400,
+							y: 50,
+							"font-family": font_family,
+							"font-size": "30px",
+							fill: rgbArrayToString(colors[current_data])
+						});
+					titletext[1] = choreosvg.append("text")
+						.text(thisdata[current_data].length)
+						.attr({
+							x: w-340,
+							y: 50,
+							"font-family": font_family,
+							"font-size": "30px",
+							"text-decoration": "underline",
+							fill: rgbArrayToString(colors[current_data])
+						});
+					titletext[2] = choreosvg.append("text")
+						.text(" " + names[current_data])
+						.attr({
+							x: w-300,
+							y: 50,
+							"font-family": font_family,
+							"text-decoration": "underline",
+							"font-size": "30px",
+							fill: rgbArrayToString(colors[current_data])
+						});
+
+					infodetails = choreosvg.append("text")
+						.text("")
+						.attr({
+							x: w-400,
+							y: 85,
+							width: "350px",
+							"font-family": font_family,
+							"font-size": "20px",
+							fill: rgbArrayToString(colors[current_data])
+						});
+
+					//Click to change number of entries
+					titletext[1].on("click", function() {
+						current_num_bars += 1;
+						current_num_bars %= num_bars.length;
+
+						//Update data values
+						for (var i = 0; i < thisdata.length; i++) {
+							thisdata[i] = alldata[i].slice(0,num_bars[current_num_bars]);
+							max_data[i] = d3.max(thisdata[i], function(d){return d[1];});
+							min_data[i] = d3.min(thisdata[i], function(d){return d[1];});
+							yScales[i].domain([0,max_data[i]]);
+							xOrdinalScales[i].domain(d3.range(thisdata[i].length));
+							colorScales[i].domain([0,max_data[i]]);
+						};
+
+						removeAllRectsAndText();
+
+						createBars();
+					});
+					// End of on click for titletext[1]
+
+					//Click on type to change type of top 20
+					titletext[2].on("click", function() {
+
+						current_data += 1;
+						current_data %= thisdata.length;
+
+						updateBars();
+					}); 
+					// end of on click for titletext[2]
 
 
-				} 
-		//end of inner else
+					// Hover over bar to highlight and show info
+					choreosvg.selectAll("rect").on("mouseover", function(d) {
+						d3.select(this)
+						.attr("fill",rgbArrayToString(highlight_color));
+
+						var xPosition = parseFloat(d3.select(this).attr("x")) + xOrdinalScales[current_data].rangeBand()/2;
+						var yPosition = parseFloat(d3.select(this).attr("y"))/2 + h/2;
+
+						infodetails.transition()
+						.duration(50)
+						.text(function(){
+							return d[0] + ": " + d[1] + " " + quantifications[current_data];
+						})
+						.attr("fill",function(){
+							return rgbArrayToString(colors[current_data]);
+						});
+
+						infodetails.classed("hidden", false);
+
+					}); 
+					// end of mouseover for bars
+
+					//Leave rectangle
+					choreosvg.selectAll("rect").on("mouseout", function(d) {
+						d3.select(this)
+						.transition()
+						.duration(250)
+						.attr("fill", colorCurrentRects(d[1]));
+						infodetails.classed("hidden",true);
+					}); 
+					//end of mouseout for bars
+
+				}
+				// end of create vbars
+
+				//create bars
+				createBars();
+
+			} 
+			//end of inner else
 		}); 
 		// end of dsv function
 	} 
