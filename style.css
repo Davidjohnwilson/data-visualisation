@@ -11,3 +11,12 @@ h1,h2,h3,h4,h5,text,p {
 }
 
 text.hidden { fill: transparent; }
+
+:root {
+  --djw-red:     rgb(148,  17,   0);
+  --djw-blue:    rgb(118, 214, 255);
+  --djw-orange:  rgb(244, 172,   0);
+}
+
+body { padding-bottom: 70px; }
+

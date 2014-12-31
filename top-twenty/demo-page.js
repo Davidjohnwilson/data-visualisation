@@ -35,8 +35,8 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 		var quantifications = ["pieces", "performances"];
 		var colors = [[0,0,128],[128,0,0]];
 		var highlight_colors = [[0,200,255],[255,165,0]];
-		var rect_transition_time = 250;
-		var total_rect_transition = 750;
+		var rect_transition_time = 350;
+		var total_rect_transition = 950;
 
 		// Call toptwenty
 		toptwenty(svg_id,

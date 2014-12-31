@@ -1,296 +1,70 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="utf-8">
 	<title>D3 Page Template</title>
-	<script type="text/javascript" src="./d3/d3.js"></script>
+	<link href="./css/cosmo-bootstrap.min.css" rel="stylesheet">
+	<link href="./css/bootstrap-theme.min.css" rel="stylesheet">
+	<link href="./style.css" rel="stylesheet">
+
+	<link rel="stylesheet" type="text/css" href="./style.css">
 </head>
 <body>
-	<p>Click on the graph title to switch from Top 20 Choreographers to Top 20 Pieces.</p>
 
-	<br>
-	<br>
-
-	<div id="tooltipPieceChoreo" class="hidden">
-		<p><strong><span id="namePieceChoreo">Important Label Heading</span></strong></p>
-		<p><span id="valuePieceChoreo">100</span></p>
-	</div>
-
-	<script type="text/javascript">
-	d3.csv("choreos.csv", function(error,dataChoreo) {
-		if (error) {
-			console.log(error);
-		} else {
-			var dsv = d3.dsv("|","text/plain");
-			dsv("pieces.csv", function(error,dataPiece) {
-				if (error) {
-					console.log(error);
-				} else {
-
-					var choreosvg = d3.select("body").append("svg")
-					h = 500;
-					w = 1000;
-					choreosvg.attr("width",w).attr("height",h);
+	<div class="navbar navbar-inverse" role="navigation">
+   	  <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          </button>
+        <a class="navbar-brand active" href="../index.html">Data Visualisations - David John Wilson</a>
+      </div>
+    </div>
 
 
-					var counts = dataChoreo.map(function(o){
-						return parseInt(o.count);
-					});
-					var twentycounts = counts.slice(0,20);
-					var choreographers = dataChoreo.map(function(o){
-						return o.choreographer;
-					});
-					var count = counts.reduce(function(a, b) {
-						return a+b;
-					});
-					console.log(count);
-
-					var choreodata = dataChoreo.map(function(o){
-						return [o.choreographer,parseInt(o.count)];
-					});
-					var thischoreodata = choreodata.slice(0,20);
+	  </div>
 
 
-					var countsPiece = dataPiece.map(function(o){
-						return o.count
-					});
-					var countPiece = countsPiece.reduce(function(a, b) {
-						return parseInt(a) + parseInt(b);
-					});
-					console.log(count);
-
-					var piecedata = dataPiece.map(function(o){
-						return [o.piece,parseInt(o.count)];
-					})
-
-					var thispiecedata = piecedata.slice(0,20);
+  <div class="container" role="main">
 
 
-					var max_data_choreo = d3.max(thischoreodata, function(d){return d[1];});
-					var min_data_choreo = d3.min(thischoreodata, function(d){return d[1];});
-					var yScaleChoreo = d3.scale.linear()
-					.domain([0,max_data_choreo])
-					.range ([0,h]);
-					var yScaleReversedChoreo = d3.scale.linear()
-					.domain([0,max_data_choreo])
-					.range ([h,0]);
-					var xScaleChoreo = d3.scale.linear()
-					.domain([0,thischoreodata.length])
-					.range([0,w]);
-					var xScaleReversedChoreo = d3.scale.linear()
-					.domain([0,thischoreodata.length])
-					.range([w,0]);
-					var colorScaleChoreo = d3.scale.sqrt()
-					.domain([0,max_data_choreo])
-					.rangeRound([50,255]);
-					var xOrdinalScaleChoreo = d3.scale.ordinal()
-					.domain(d3.range(thischoreodata.length))
-					.rangeRoundBands([0,w],0.05);
+	<h1>Data Visualisations by David John Wilson</h1>
+
+	<p>This page gives a brief demonstration of the visualisations included in this repository. All visualisations are built over <a href="http://d3js.org/"><code>d3.js</code></a>.</p>
+
+  	 <div class="panel panel-primary">
+      <div class="panel-heading">
+        <h2><code>toptwenty.js</code>: Interactive Top 20 List</h2>
+      </div>
+      <div class="panel-body">
+
+      	<p><code>toptwenty.js</code> allows a user to easily create an interactive Top 20 list from lists of key-value pairs. The end-user can interact with the list to change the data source or the sample size, with each change handled with smooth animations. Hovering over a bar in the Top 20 displays the key information and highlights the bar.</p>
+
+      	<p>A user can not only customise the data used, but also the sample size options and various appearance parameters (colors, speed of animations, size of visualisation, etc).</p>
+
+      	<p>Below is an example of an interactive Top 20 list created with <code>toptwenty.js</code>. It displays the top choreographers (with respect to the number of pieces they have created) and the top ballets (with respect to the number of performances of each ballet) for the Royal Ballet at the Royal Opera House, London (between 1957 and 2012).</p>
+
+      	<br>
+
+      <h3>Interactive chart of Royal Ballet choreographers and ballets</h3>
+      <div id="divPieceChoreo" style="text-align:center;">
+      <svg id="svgPieceChoreo"></svg>
+      <br>
+      <p>Click on the graph title to switch from Choreographers to Ballets and between Top 5, 10, 20, 25, and 50. Hover over a bar to see further details.</p>
+
+      </div>
+    </div>
 
 
-					var max_data_pieces = d3.max(thispiecedata, function(d){return d[1];});
-					var min_data_pieces = d3.min(thispiecedata, function(d){return d[1];});
-					var yScalePiece = d3.scale.linear()
-					.domain([0,max_data_pieces])
-					.range ([0,h]);
-					var yScaleReversedPiece = d3.scale.linear()
-					.domain([0,max_data_pieces])
-					.range ([h,0]);
-					var xScalePiece = d3.scale.linear()
-					.domain([0,thispiecedata.length])
-					.range([0,w]);
-					var xScaleReversedPiece = d3.scale.linear()
-					.domain([0,thispiecedata.length])
-					.range([w,0]);
-					var colorScalePiece = d3.scale.sqrt()
-					.domain([0,max_data_pieces])
-					.rangeRound([50,200]);
-					var xOrdinalScalePiece = d3.scale.ordinal()
-					.domain(d3.range(thispiecedata.length))
-					.rangeRoundBands([0,w],0.05);
+</div>
 
+  <script type="text/javascript" src="./d3/d3.js"></script>
+  <script type="text/javascript" src="./top-twenty/top-twenty.js"></script>
+  <script type="text/javascript" src="./top-twenty/demo-page.js"></script>
+  <script src="./js/jquery.min.js"></script>
+  <script src="./js/bootstrap.min.js"></script>
 
-
-
-					var rects = choreosvg.selectAll("rect")
-					.data(thischoreodata)
-					.enter()
-					.append("rect")
-					.attr({
-						x: function(d,i) { return xOrdinalScaleChoreo(i);},
-						y: function(d) { return h - yScaleChoreo(d[1]);},
-						width: xOrdinalScaleChoreo.rangeBand(),
-						height: function(d) { return yScaleChoreo(d[1]); },
-						fill: function(d) { return  "rgb(0, 0, " + colorScaleChoreo(d[1]) + ")";}
-					});
-
-					var texts = choreosvg.selectAll("text")
-					.data(thischoreodata)
-					.enter()
-					.append("text")
-					.text(function(d) {
-						return d[1];
-					})
-					.attr({
-						x: function(d,i) { return xOrdinalScaleChoreo(i)+xOrdinalScaleChoreo.rangeBand() / 2;},
-						y: function(d) { return h - yScaleChoreo(d[1])+14; },
-						"font-family": "sans-serif",
-						"font-size": "11px",
-						fill: "white",
-						"text-anchor": "middle"
-					});
-
-					var titletext = choreosvg.append("text")
-											 .text("Top 20 Choreographers")
-											 .attr({
-											 	x: w-400,
-											 	y: 50,
-											 	"font-family": "sans-serif",
-												"font-size": "30px",
-												fill: "blue"
-											 });
-
-
-					var onChoreos = true;
-
-					titletext.on("click", function() {
-
-						if (onChoreos){
-
-						choreosvg.selectAll("rect")
-						.data(thispiecedata)
-						.transition()
-						.delay(function(d,i){return i*100;})
-						.duration(500)
-						.attr("y",function(d){
-							return h-yScalePiece(d[1]);
-						})
-						.attr("height",function(d){
-							return yScalePiece(d[1]);
-						})
-						.attr("fill", function(d) {
-							return "rgb(" + colorScalePiece(d[1]) + ",0,0)";
-						});
-
-						choreosvg.selectAll("text")
-						.data(thispiecedata)
-						.transition()
-						.delay(function(d,i){return i*100;})
-						.duration(500)
-						.text(function(d) {
-							return d[1];
-						})
-						.attr("x", function(d,i) {
-							return xOrdinalScalePiece(i) + xOrdinalScalePiece.rangeBand()/2;
-						})
-						.attr("y", function(d) {
-							return h - yScalePiece(d[1])+14;
-						});
-
-						titletext.transition()
-								 .delay(500)
-								 .duration(500)
-								 .text("Top 20 Pieces")
-								 .attr("fill", "red");
-
-						onChoreos = false;
-
-					} else {
-
-
-						choreosvg.selectAll("rect")
-						.data(thischoreodata)
-						.transition()
-						.delay(function(d,i){return i*100;})
-						.duration(500)
-						.attr("y",function(d){
-							return h-yScaleChoreo(d[1]);
-						})
-						.attr("height",function(d){
-							return yScaleChoreo(d[1]);
-						})
-						.attr("fill", function(d) {
-							return "rgb(0,0," + colorScaleChoreo(d[1]) + ")";
-						});
-
-						choreosvg.selectAll("text")
-						.data(thischoreodata)
-						.transition()
-						.delay(function(d,i){return i*100;})
-						.duration(500)
-						.text(function(d) {
-							return d[1];
-						})
-						.attr("x", function(d,i) {
-							return xOrdinalScaleChoreo(i) + xOrdinalScaleChoreo.rangeBand()/2;
-						})
-						.attr("y", function(d) {
-							return h - yScaleChoreo(d[1])+14;
-						});
-
-						titletext.transition()
-								 .delay(500)
-								 .duration(500)
-								 .text("Top 20 Choreographers")
-								 .attr("fill", "blue");
-
-
-						onChoreos = true;
-					}
-
-
-					}); // end of on click
-
-				rects.on("mouseover", function(d) {
-						d3.select(this)
-						  .attr("fill","orange");
-
-						var xPosition = parseFloat(d3.select(this).attr("x")) + xOrdinalScaleChoreo.rangeBand()/2;
-						var yPosition = parseFloat(d3.select(this).attr("y"))/2 + h/2;
-
-						var tooltipPieceChoreo = d3.select("#tooltipPieceChoreo")
-
-						tooltipPieceChoreo.style("left", xPosition+"px")
-						  .style("top", yPosition+"px")
-						  .select("#valuePieceChoreo")
-						  .text(function(){
-						  	if (onChoreos) {
-						  		return d[1] + " pieces";
-						  	} else {
-						  		return d[1] + " performances";
-						  	}
-
-						  });
-
-						tooltipPieceChoreo.select("#namePieceChoreo")
-						  .text(d[0] + ": ");
-
-						tooltipPieceChoreo.classed("hidden", false);
-
-
-						}); // end of mouseover
-
-				rects.on("mouseout", function(d) {
-						 	d3.select(this)
-						 	  .transition()
-						 	  .duration(250)
-						 	  .attr("fill", function(){
-						 	  	if (onChoreos) {
-						 	  		return "rgb(0,0," + colorScaleChoreo(d[1]) + ")";
-						 	  	} else {
-						 	  		return "rgb(" + colorScalePiece(d[1]) + ",0,0)";
-						 	  	}
-						 	  });
-						 	d3.select("#tooltipPieceChoreo").classed("hidden",true);
-						 }); //end of mouseout
-
-
-				} //end of inner else
-			}); // end of dsv function
-		} // end of outer else
-	}); // end of csv function
-</script>
 </body>
-
-
 </html>
