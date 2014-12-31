@@ -1,4 +1,4 @@
-// Top-Twenty
+// toptwenty.js
 //	by David Wilson
 //
 //	An interactive "Top 20" list that allows you to change data sets and number of displayed
