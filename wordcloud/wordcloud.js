@@ -17,8 +17,8 @@ function wordcloud(svg_id,h,w,font_family,words){
 				return d;
 			})
 			.attr({
-				x: function(d) { return Math.random()*w;},
-				y: function(d) { return Math.random()*h;},
+				x: function(d) { return Math.random()*(w-20)+10;},
+				y: function(d) { return Math.random()*(h-20)+10;},
 				"font-family": font_family,
 				"font-size": "11px",
 				fill: "black",
@@ -31,4 +31,3 @@ function wordcloud(svg_id,h,w,font_family,words){
 // Adjust size with frequency
 // Avoid overlapping
 // Remove duplicates
-// Remove punctuation

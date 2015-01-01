@@ -10,7 +10,7 @@ dsv("../data/pieces.csv", function(error,dataPiece) {
 	});
 	console.log(names);
 
-	var words = names.join(" ").split(" ");
+	var words = names.slice(0,50).join(" ").replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/\s{2,}/g," ").split(" ");
 	console.log(words);
 
 	var svg_id = "#svgWordCloud";
