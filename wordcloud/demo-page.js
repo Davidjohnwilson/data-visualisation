@@ -1,17 +1,18 @@
-var dsv = d3.dsv("|","text/plain");
-dsv("../data/pieces.csv", function(error,dataPiece) {
+// var dsv = d3.dsv("|","text/plain");
+// dsv("../data/pieces.csv", function(error,dataPiece) {
+d3.csv("../data/wordslist.csv", function(error,dataWords) {
 	if (error) {
 		console.log(error);
 		return
 	}
+	d3.csv("../data/edgelist.csv", function(error,dataEdges){
+		if (error) {
+			console.log(error);
+			return
+		}
 
-	var names = dataPiece.map(function(d){
-		return d.piece;
-	});
-	console.log(names);
-
-	var words = names.slice(0,50).join(" ").replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/\s{2,}/g," ").split(" ");
-	console.log(words);
+	var words = dataWords;
+	var edges = dataEdges;
 
 	var svg_id = "#svgWordCloud";
 	var h = 500;
@@ -24,7 +25,8 @@ dsv("../data/pieces.csv", function(error,dataPiece) {
 		 		  w,
 		 		  font_family,
 		// 		  num_bars,
-		 		  words);
+		 		  words,
+		 		  edges);
 		// 		  colorRanges,
 		// 		  names,
 		// 		  quantifications,
@@ -34,4 +36,5 @@ dsv("../data/pieces.csv", function(error,dataPiece) {
 		// 		  total_rect_transition);
 
 
+});
 });
