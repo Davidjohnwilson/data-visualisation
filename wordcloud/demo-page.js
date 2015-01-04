@@ -11,11 +11,19 @@ d3.csv("../data/wordslist.csv", function(error,dataWords) {
 			return
 		}
 
-	var words = dataWords;
-	var edges = dataEdges;
+	var words_array = [];
+	for (var i = 0; i < dataWords.length; i++){
+		words_array.push({word: dataWords[i].word, count: parseInt(dataWords[i].count)});
+	}
+	var edges_array = [];
+	for (var i = 0; i < dataEdges.length; i++){
+		edges_array.push({source: parseInt(dataEdges[i].source), target: parseInt(dataEdges[i].target)});
+	}
+
+	var dataset = { nodes: words_array, edges: edges_array};
 
 	var svg_id = "#svgWordCloud";
-	var h = 500;
+	var h = 1000;
 	var w = 1000;
 	var font_family = 'GulimFontFamily';
 
@@ -25,8 +33,7 @@ d3.csv("../data/wordslist.csv", function(error,dataWords) {
 		 		  w,
 		 		  font_family,
 		// 		  num_bars,
-		 		  words,
-		 		  edges);
+		 		  dataset);
 		// 		  colorRanges,
 		// 		  names,
 		// 		  quantifications,

@@ -3,12 +3,13 @@ import re
 f = open('../data/pieces.csv','r')
 pieces=[]
 
-punctuation = re.compile('[-]')
-spaces = re.compile('/\s{2,}/g')
+punctuation = re.compile('[\-()]')
+spaces = re.compile('\s{2,}')
 
 for i in xrange(50):
 	pieces.append(spaces.sub(" ",punctuation.sub("",f.readline(1000))).split('|')[0])
 
+print pieces
 pieces = pieces[1:]
 
 words = []
@@ -38,8 +39,8 @@ for i in xrange(len(words)):
 
 # print(wordcount)
 
-# for i in xrange(len(wordcount)):
-# 	print(wordcount[i]['word'] + "," + str(wordcount[i]['count']))
+for i in xrange(len(wordcount)):
+	print(wordcount[i]['word'] + "," + str(wordcount[i]['count']))
 
 for i in xrange(len(edges)):
-	print(edges[i][0] + "," + edges[i][1])
+	print(str(wordcountlist.index(edges[i][0])) + "," + str(wordcountlist.index(edges[i][1])))
