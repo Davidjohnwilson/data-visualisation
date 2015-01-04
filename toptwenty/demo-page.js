@@ -108,53 +108,49 @@ d3.csv("../data/choreos.csv", function(error,dataChoreo) {
 
 					sharedsvg.selectAll("*").remove();
 
-
-
 					if (!onBallet) {
-					toptwenty(svg_id,
-						  h,
-						  w,
-						  font_family,
-						  num_bars,
-						  balletdata,
-						  colorRangesBallet,
-						  namesBallet,
-						  quantifications,
-						  colorsBallet,
-						  highlightColorsBallet,
-						  rect_transition_time,
-						  total_rect_transition);
+						toptwenty(svg_id,
+							  h,
+							  w,
+							  font_family,
+							  num_bars,
+							  balletdata,
+							  colorRangesBallet,
+							  namesBallet,
+							  quantifications,
+							  colorsBallet,
+							  highlightColorsBallet,
+							  rect_transition_time,
+							  total_rect_transition);
 
-				toptitle.text("The Royal Ballet");
+						toptitle.text("The Royal Ballet");
 
-				} else {
-					toptwenty(svg_id,
-						  h,
-						  w,
-						  font_family,
-						  num_bars,
-						  operadata,
-						  colorRangesOpera,
-						  namesOpera,
-						  quantifications,
-						  colorsOpera,
-						  highlightColorsOpera,
-						  rect_transition_time,
-						  total_rect_transition);
+					} else {
+						toptwenty(svg_id,
+							  h,
+							  w,
+							  font_family,
+							  num_bars,
+							  operadata,
+							  colorRangesOpera,
+							  namesOpera,
+							  quantifications,
+							  colorsOpera,
+							  highlightColorsOpera,
+							  rect_transition_time,
+							  total_rect_transition);
 
-					toptitle.text("The Royal Opera");
-				}
+						toptitle.text("The Royal Opera");
+					}
 
-				onBallet = !onBallet;
+					onBallet = !onBallet;
 
-				}); // End of on click for titletext[1]
-
-
+				}); // End of on click for toptitle
 
 
-				});
-				});
-				});
-				});
 
 
+			});
+		});
+	});
+});
