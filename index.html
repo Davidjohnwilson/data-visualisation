@@ -47,21 +47,47 @@
 
       	<br>
 
-      <h3>Interactive chart of Royal Ballet choreographers and ballets</h3>
-      <div id="divPieceChoreo" style="text-align:center;">
-      <svg id="svgPieceChoreo"></svg>
+      <h3>Interactive chart of Royal Opera and Ballet Data</h3>
+      <div id="divShared" style="text-align:center;">
+      <svg id="svgSharedTitle"></svg>
+      <svg id="svgShared"></svg>
       <br>
-      <p>Click on the graph title to switch from Choreographers to Ballets and between Top 5, 10, 20, 25, and 50. Hover over a bar to see further details.</p>
-
+      <p>Click on the graph title to switch data set and then on the subtitle to select from Choreographers/Composers to Ballets/Operas and between Top 5, 10, 20, 25, and 50. Hover over a bar to see further details.</p>
       </div>
+
     </div>
 
+
+     <div class="panel panel-primary">
+      <div class="panel-heading">
+        <h2><code>wordcloud.js</code>: Interactive Word Clouds</h2>
+      </div>
+      <div class="panel-body">
+
+        <p><code>wordcloud.js</code> allows a user to easily create an interactive word-cloud from lists of key-value pairs and edge-mappings. The end-user can interact with the word-cloud by dragging nodes to adjust the layout and double-clicking on a node to highlight all connected nodes (double-clicking on any node will remove the highlight).</p>
+
+        <p>A user can not only customise the data used, but also the sample size options and various appearance parameters (colors, speed of animations, size of visualisation, etc).</p>
+
+        <p>Below is an example of an interactive word cloud created with <code>wordcloud.js</code>. It displays the word cloud for the Top 50 ballets for the Royal Ballet at the Royal Opera House, London (between 1957 and 2012). Words are linked (directionally) if they occur adjacently in a title.</p>
+
+        <br>
+
+      <h3>Interactive word cloud of Royal Ballet Pieces</h3>
+
+      <div id="divWordCloud" style="text-align:center;">
+      <svg id="svgWordCloud"></svg>
+      <br>
+      </div>
+
+    </div>
 
 </div>
 
   <script type="text/javascript" src="./assets/js/d3/d3.js"></script>
   <script type="text/javascript" src="./toptwenty/toptwenty.js"></script>
   <script type="text/javascript" src="./toptwenty/demo-page.js"></script>
+  <script type="text/javascript" src="./wordcloud/wordcloud.js"></script>
+  <script type="text/javascript" src="./wordcloud/demo-page.js"></script>
   <script src="./assets/js/jquery/jquery.min.js"></script>
   <script src="./assets/js/jquery/bootstrap.min.js"></script>
 

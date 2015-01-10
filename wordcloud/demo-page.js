@@ -26,21 +26,15 @@ d3.csv("../data/wordslist.csv", function(error,dataWords) {
 	var h = 1000;
 	var w = 1000;
 	var font_family = 'GulimFontFamily';
+	var colorRange = [];
 
-			// Call wordcloud
+		// Call wordcloud
 		 wordcloud(svg_id,
 		 		  h,
 		 		  w,
 		 		  font_family,
-		// 		  num_bars,
 		 		  dataset);
-		// 		  colorRanges,
-		// 		  names,
-		// 		  quantifications,
-		// 		  colors,
-		// 		  highlight_colors,
-		// 		  rect_transition_time,
-		// 		  total_rect_transition);
+
 
 
 });

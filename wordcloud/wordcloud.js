@@ -14,26 +14,6 @@ function wordcloud(svg_id,h,w,font_family,data){
 		return "rgb(" + rgb[0] + "," + rgb[1] + "," + rgb[2] + ")";
 	}
 
-
-	// var words = data.nodes;
-	// var edges = data.edges;
-
-	// var texts = choreosvg.selectAll("text")
-	// 		.data(words)
-	// 		.enter()
-	// 		.append("text")
-	// 		.text(function(d) {
-	// 			return d.word;
-	// 		})
-	// 		.attr({
-	// 			x: function(d) { return Math.random()*(w-20)+10;},
-	// 			y: function(d) { return Math.random()*(h-20)+10;},
-	// 			"font-family": font_family,
-	// 			"font-size": function(d) {return (11+5*parseInt(d.count))+"px";},
-	// 			fill: "black",
-	// 			"text-anchor": "middle"
-	// 		});
-
 	var force = d3.layout.force()
 		.nodes(data.nodes)
 		.links(data.edges)
@@ -47,7 +27,9 @@ function wordcloud(svg_id,h,w,font_family,data){
 		.enter()
 		.append("line")
 		.style("stroke","#ccc")
-		.style("stroke-width","1.5px");
+		.style("stroke-width","1.5px")
+		.style("marker-end",  "url(#suit)") // Modified line 
+;
 
 	var nodes = choreosvg
 		.selectAll("ellipse")
@@ -57,7 +39,9 @@ function wordcloud(svg_id,h,w,font_family,data){
 		.attr("rx", function(d) {return 32;})
 		.attr("ry", function(d) {return 15;})
 		.attr("fill",function(d) { return "rgb("+ (220+d.count*5) + ",0,0)"; })
-		.call(force.drag);
+		.call(force.drag)
+		.on("dblclick", allConnectedNodes); //Added code 
+
 
 	var words = choreosvg.selectAll("text")
 		.data(data.nodes)
@@ -80,10 +64,139 @@ function wordcloud(svg_id,h,w,font_family,data){
 		     .attr("cy", function(d) { return d.y; });
 		words.attr("x", function(d) { return d.x; })
 		     .attr("y", function(d) { return d.y+4; }); // +4 to compensate for font-size
+
+		nodes.each(collide(0.5));
 	});
 
-};
+// The following features are taken or adapted from this Coppelia.io blog post: 
+// http://www.coppelia.io/2014/07/an-a-to-z-of-extra-features-for-the-d3-force-layout/
 
-// Adjust size with frequency
-// Avoid overlapping
-// Remove duplicates
+// ADD ARROW HEADS
+// Adds an arrow head halfway along each edge
+choreosvg.append("defs").selectAll("marker")
+    .data(["suit", "licensing", "resolved"])
+  .enter().append("marker")
+    .attr("id", function(d) { return d; })
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 50)
+    .attr("refY", 0)
+    .attr("markerWidth", 6)
+    .attr("markerHeight", 6)
+    .attr("orient", "auto")
+  .append("path")
+    .attr("d", "M0,-5L10,0L0,5 L10,0 L0, -5")
+    .style("stroke", "#ccc")
+    .style("opacity", "0.6");
+
+// AVOID COLLISIONS
+// Function to try and avoid collisions between circles
+var padding = 1, // separation between circles
+    radius=8;
+function collide(alpha) {
+  var quadtree = d3.geom.quadtree(data.nodes);
+  return function(d) {
+    var rb = 2*radius + padding,
+        nx1 = d.x - rb,
+        nx2 = d.x + rb,
+        ny1 = d.y - rb,
+        ny2 = d.y + rb;
+    quadtree.visit(function(quad, x1, y1, x2, y2) {
+      if (quad.point && (quad.point !== d)) {
+        var x = d.x - quad.point.x,
+            y = d.y - quad.point.y,
+            l = Math.sqrt(x * x + y * y);
+          if (l < rb) {
+          l = (l - rb) / l * alpha;
+          d.x -= x *= l;
+          d.y -= y *= l;
+          quad.point.x += x;
+          quad.point.y += y;
+        }
+      }
+      return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+    });
+  };
+}
+
+
+// DOUBLE CLICK TO HIGHLIGHT
+// Adds double click connection highlighting
+//Toggle stores whether the highlighting is on
+var toggle = 0;
+//Create an array logging what is connected to what
+var linkedByIndex = {};
+for (i = 0; i < data.nodes.length; i++) {
+    linkedByIndex[i + "," + i] = 1;
+};
+data.edges.forEach(function (d) {
+    linkedByIndex[d.source.index + "," + d.target.index] = 1;
+});
+var connectedByIndex = linkedByIndex;
+for (i=0; i < 1; i++) {
+	for (j = 0; j < data.nodes.length; j++) {
+		for (k = 0; k < data.nodes.length; k++) {
+			for (l = 0; l < data.nodes.length; l++) {
+				if (connectedByIndex[j+","+k] == 1 & connectedByIndex[k+","+l] == 1) {
+					connectedByIndex[j+","+l]=1;
+					connectedByIndex[l+","+j]=1;
+				}
+				if (connectedByIndex[l+","+k] == 1 & connectedByIndex[k+","+j] == 1) {
+					connectedByIndex[j+","+l]=1;
+					connectedByIndex[l+","+j]=1;
+				}
+			}
+		}
+	}
+}
+//This function looks up whether a pair are neighbours
+function neighboring(a, b) {
+    return linkedByIndex[a.index + "," + b.index];
+}
+
+function connected(a,b) {
+    return connectedByIndex[a.index + "," + b.index];
+}
+
+function connectedNodes() {
+    if (toggle == 0) {
+        //Reduce the opacity of all but the neighbouring nodes
+        d = d3.select(this).node().__data__;
+        nodes.style("opacity", function (o) {
+            return neighboring(d, o) | neighboring(o, d) ? 1 : 0.1;
+        });
+        edges.style("opacity", function (o) {
+            return d.index==o.source.index | d.index==o.target.index ? 1 : 0.1;
+        });
+        //Reduce the op
+        toggle = 1;
+    } else {
+        //Put them back to opacity=1
+        nodes.style("opacity", 1);
+        edges.style("opacity", 1);
+        toggle = 0;
+    }
+}
+
+function allConnectedNodes() {
+    if (toggle == 0) {
+        //Reduce the opacity of all but the neighbouring nodes
+        d = d3.select(this).node().__data__;
+        nodes.style("opacity", function (o) {
+            return connected(d, o) | connected(o, d) ? 1 : 0.1;
+        });
+        edges.style("opacity", function (o) {
+        	return connected(d,o.source) | connected(d,o.target) ? 1 : 0.1;
+            // return d.index==o.source.index | d.index==o.target.index ? 1 : 0.1;
+        });
+        //Reduce the op
+        toggle = 1;
+    } else {
+        //Put them back to opacity=1
+        nodes.style("opacity", 1);
+        edges.style("opacity", 1);
+        toggle = 0;
+    }
+}
+
+
+};
